@@ -142,7 +142,7 @@ A context is a property list which has the following keys:
 
 :exit-status
         The exit status of :format-command.
-:no-diff-p
+:diff-p
         Whether the original file content and the result of the formatting
         differ or not.  This property exists within :after-apply function
         only."
@@ -214,14 +214,14 @@ a `before-save-hook'." name name)
                                         ,format-command nil errbuf nil
                                         (append ,format-args (list tmpfile))))
                     (context (list :exit-status exit-status))
-                    no-diff-p)
+                    diff-p)
                (unless (funcall ,after-format-func context)
-                 (setq no-diff-p (zerop (call-process-region
+                 (setq diff-p (not (zerop (call-process-region
                                          (point-min) (point-max) "diff"
-                                         nil patchbuf nil "-n" "-" tmpfile)))
-                 (unless no-diff-p
+                                         nil patchbuf nil "-n" "-" tmpfile))))
+                 (if diff-p
                    (langfmt--apply-rcs-patch patchbuf))
-                 (funcall ,after-apply-func (nconc (list :no-diff-p no-diff-p)
+                 (funcall ,after-apply-func (nconc (list :diff-p diff-p)
                                                   context)))
                (when errbuf
                  (if (zerop exit-status)
