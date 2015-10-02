@@ -85,24 +85,26 @@ function."
 
 (defmacro define-langfmt (symbol docstring &rest properties)
   "Define formatting function `SYMBOL' and some helpers:
-Function `SYMBOL-before-save' is to be added to .emacs to run `SYMBOL'
+The function `SYMBOL-before-save' can be used in a before-sace hook to run `SYMBOL'
 on the current buffer when saving.
-Variable `SYMBOL-show-errors' is where to display the error output.
+The variable `SYMBOL-show-errors' determines where error output is displayed.
 
 DOCSTRING is the documentation of the formatting function `SYMBOL'.
-The following PROPERTIES are used by `SYMBOL' and above helpers.
+The following PROPERTIES are used by `SYMBOL' and aforementioned helpers.
 All properties are mandatory.
 
-The formatting function `SYMBOL' copies the file of the current buffer
-into the temporary file, then run :format-command with :format-args and
-the temporary file.  Thus, the temporary file should be formatted.
+The formatting function `SYMBOL' copies the file of the current
+buffer into a temporary file and runs :format-command,
+with :format-args and the path to the temporary file as
+arguments. :format-command is expected to overwrite the temporary
+file with a formatted version of it.
 
-:after-format function is called after finishing :format-command.
-If the return value of the function is nil, the contents of the original
-file and the result of the formatting is compared.  If they differ, the RCS
-patch is generated and applied automatically, then :after-diff function is
-called.  :after-diff function is usually used to inform the result of the
-patching to the users.
+:after-format function is called after :format-command finishes
+executing. If the return value of :after-format is nil, the
+contents of the buffer will be modified to match that of the
+formatted temporary file. The :after-diff function is called
+afterwards. The :after-diff function is usually used to inform
+the user of the results.
 
 :after-format and :after-diff should be functions that take one argument,
 a context described below.
@@ -117,18 +119,18 @@ filtered by :error-filter is displayed.
 :format-command
         VALUE should be a command name of a formatting tool.
 :format-args
-        VALUE should be a list of command line options for :format-command.
-        The temporary file name is followed.
+        VALUE should be a list of command line options
+        for :format-command. The name of the temporary file will
+        be appended as the last argument automatically.
 :after-format
-        VALUE should be a function to be run after the formatting.
+        VALUE should be a function to be run after :format-command ran.
 
-        If the function returns nil, the result of the formatting is
-        compared with the original file content.
+        If the function returns nil, the buffer contents will be
+        updated to match those of the formatted file.
 :after-diff
-        VALUE should be a function to be run after the comparison between
-        the original file content and the result of the formatting.
+        VALUE should be a function to be run after the buffer has been formatted.
 :error-filter
-        VALUE should be a function to filter the error buffer content.
+        VALUE should be a function to filter the error buffer contents.
         The function takes two arguments, a original file name and a
         temporary file name.
 
