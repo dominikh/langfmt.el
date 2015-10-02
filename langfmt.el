@@ -102,11 +102,11 @@ file with a formatted version of it.
 :after-format function is called after :format-command finishes
 executing. If the return value of :after-format is nil, the
 contents of the buffer will be modified to match that of the
-formatted temporary file. The :after-diff function is called
-afterwards. The :after-diff function is usually used to inform
+formatted temporary file. The :after-apply function is called
+afterwards. The :after-apply function is usually used to inform
 the user of the results.
 
-:after-format and :after-diff should be functions that take one argument,
+:after-format and :after-apply should be functions that take one argument,
 a context described below.
 
 The formatting errors are recognized by the exit status of :format-command.
@@ -127,7 +127,7 @@ filtered by :error-filter is displayed.
 
         If the function returns nil, the buffer contents will be
         updated to match those of the formatted file.
-:after-diff
+:after-apply
         VALUE should be a function to be run after the buffer has been formatted.
 :error-filter
         VALUE should be a function to filter the error buffer contents.
@@ -144,7 +144,7 @@ A context is a property list which has the following keys:
         The exit status of :format-command.
 :no-diff-p
         Whether the original file content and the result of the formatting
-        differ or not.  This property exists within :after-diff function
+        differ or not.  This property exists within :after-apply function
         only."
   (declare (indent 1) (doc-string 2))
   (let* ((name (symbol-name symbol))
@@ -158,7 +158,7 @@ A context is a property list which has the following keys:
          (format-command (plist-get properties :format-command))
          (format-args (plist-get properties :format-args))
          (after-format-func (plist-get properties :after-format))
-         (after-diff-func (plist-get properties :after-diff))
+         (after-apply-func (plist-get properties :after-apply))
          (error-filter (plist-get properties :error-filter)))
 
     `(progn
@@ -221,7 +221,7 @@ a `before-save-hook'." name name)
                                          nil patchbuf nil "-n" "-" tmpfile)))
                  (unless no-diff-p
                    (langfmt--apply-rcs-patch patchbuf))
-                 (funcall ,after-diff-func (nconc (list :no-diff-p no-diff-p)
+                 (funcall ,after-apply-func (nconc (list :no-diff-p no-diff-p)
                                                   context)))
                (when errbuf
                  (if (zerop exit-status)
